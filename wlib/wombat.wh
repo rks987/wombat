@@ -1,0 +1,63 @@
+%/token Comment 100 #(?P<token>.*)
+# wombat.wh
+
+# a NewOperator maps a use to a procedure call
+%/token NewOperator 200 `{(?P<token>.*?)}
+# a ValueOperator maps an operator definition with no operands to a value
+%/token ValueOperator 200 ``{(?P<token>.*?)}
+# special tokens starting with $ go here at higher priority
+%/token Identifier 200 (?P<token>\$builtin)
+%/token Pragma 200 {%(?P<token>.*?)}%
+%/token Identifier 100 (?P<token>[a-zA-Z\u0370-\u03ff\u1f00-\u1ffe][_a-zA-Z0-9\u0370-\u03ff\u1f00-\u1ffe]*'*[%?]?)
+%/token NewIdentifier 100 `(?P<token>[a-zA-Z\u0370-\u03ff\u1f00-\u1ffe][_a-zA-Z0-9\u0370-\u03ff\u1f00-\u1ffe]*'*[%?]?)
+%/token NewFreeIdentifier 100 ``(?P<token>[a-zA-Z0-9\u0370-\u03ff\u1f00-\u1ffe]+'*[%?]?)
+%/token Literal 100 (?P<token>"(\\"|\\\\|[^"\\])*")
+%/token Literal 100 (?P<token>[0-9]+(\.[0-9]+)?)
+%/token Literal 100 (?P<token>\.[a-zA-Z\u0370-\u03ff\u1f00-\u1ffe][_a-zA-Z0-9\u0370-\u03ff\u1f00-\u1ffe]*'*[%?]?)
+%/token MCTcmd 300 %\^(?P<token>[^\n]*)\n?
+
+# f x
+%^operator ProcedureCall (100) [" "] (200)
+# f(x)
+%^operator ProcedureCall (100) [""] (200)
+# () - 0-tuple, aka unit:Unit -- have to use %^ because value not call
+#%^operator ZeroTuple ["("] [")"] -- moved to builtin
+# ( expr ) -- purely syntax, hence no extra AST - just use parameter
+%^operator None ["("] () [")"]
+# _ is an identifier for an unimportant value
+%^operator UnderscoreId ["_"]
+
+# $ -- no left or right
+%^operator ClosureArg ["$"]
+# `$ -- no left or right
+%^operator ClosureResult ["`$"]
+# closure creation
+%^operator Closure ["{"] () ["=>"|"=>>"|"~>"|"~>>"|"<=>>"|"<<=>>"] () [":"] () ["}"]
+%^operator Closure ["{"] () [":"] () ["}"]
+%^operator Closure ["{"] [":"] () ["}"]
+# < expn > -- structure type
+%^operator StructureType ["<"] () [">"]
+
+# A statement is an expression which has some influence outside itself, such as
+# constraining fact in the following.
+# `fact 0 = 1; foreach n:Nat do fact (n+1) = (n+1)*fact(n) od
+%^operator IdListType (identifier) [":," repeating0 prepend] (identifier) [":"] (91)
+%^operator Foreach ["foreach"] (IdListType) ["," repeating0 prepend] (IdListType) ["do"] () ["od"]
+
+# The use of free identifiers, introduced with a double backquote, creates an
+# implicit foreach. It covers the smallest statement that includes all uses of
+# the identifier, except that if that includes other free identifiers it gets
+# expanded to cover all uses of that, and so on.
+
+# The result of a foreach expression is the Set of values of the expression
+# for those expressions that don't fail. When it is a set of type then we often
+# use the fact that a Set(Type) converts to the Union of that
+
+# we'll need semicolon and = in builtin.wh. ; marked associative for free identifier fixup
+%^operator Semicolon (2) [";" repeating1 prepend associative](2)
+# unification! -- lowish priority, left but it doesn't matter (total equality)
+# Note these need higher precedence than the comparison chain
+%^operator Equal (19) ["="] (19)
+
+# the rest is in ordinary wombat. 
+%/include builtin.wh

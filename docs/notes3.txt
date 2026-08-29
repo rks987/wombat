@@ -1,0 +1,23 @@
+1. The meaning of decorated types
+In a closure, the input is unified with $ and the output with `$. 
+We have the alternative of decorating the types in the closure
+header. Consider {X`x=>Y*Z`z: ...}. The decoration means:
+(a) apply the decorations as constraints, so Z`z, equivalently `z:Z.
+(b) change decorated type to be constrained to that value and
+    constrain `$ to that type: `$:Y*(Z//{:$=%z}).
+(c) Since sets convert to types, and lists convert to sets, we
+    could have written our closure as {X`x=>Y*[`z:Z]: ...}.
+
+2. Behaviours, properties and compatibility
+There is a $builtin structure type BaseHow, eg
+  Monoid = Behaviour of Type by {Type`T: < <(__Base__=T):__BaseType__=Type> Op:T*T=>>T;...> }
+  Nat ConformsTo Monoid by < ++Base__=Nat; etc
+
+3. Decideable Distinguishable
+A Prop expression has 0 or more subexpressions. It is is Decideable if
+(a) Prop subexpressions are Decideable and in the following they are 
+converted; and (b) Given values for all the subexpressions (and converted
+values for Props) there is a total procedure which will return a value
+of the Union of the Proposition with its negation. Note that it is a
+very small stepp from there to a Bool value.
+A type T is Distinguishable if Eq%(T) is Decideable.

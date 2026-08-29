@@ -1,0 +1,191 @@
+# builtin.wh
+
+# This documents what is builtin, gives it names, documents and sometimes
+# implements connections between them.
+# The need to put opertors before their use makes it a bit messy.
+
+# need * for tuple type construction, so moved up to here
+`{(80)["*" repeating1 prepend](80)} = $builtin.product; # unassociative, like comma
+
+`{(19) ["=%"] (19)} = $builtin.equalProp;
+`{(19) ["=?"] (19)} = $builtin.equalBool;
+
+# (3+0i):Rational; 3:,4:Nat
+`{(18) [":," repeating0 prepend] () [":"] (9)} = $builtin.specifyType ;
+                 #:$builtin.SpecifyType; #: (List(Any)*Type`T)=>T # returns last
+
+`Type = $builtin.Type : Type; # Need a universe level system FIXME
+`Prop = $builtin.Prop : Type;
+`Empty = $builtin.Empty : Type;
+`Any = $builtin.Any : Type;
+`Atom = $builtin.Atom : Type; 
+
+# we don't allow the multi hack for prop and bool variants of :
+`{(18) [":%"] (9)} = $builtin.specifyTypeProp:Any*Type=>>Prop;
+`{(18) [":?"] (9)} = $builtin.specifyTypeBool:Any*Type=>>Bool;
+
+`{(70)["=>"](69)} = $builtin.PartialProcedure #: Type*Type<=>>Type;
+`{(70)["=>>"](69)} = $builtin.TotalProcedure #: Type*Type<=>>Type;
+`{(70)["<=>>"](69)} = $builtin.EmbedProcedure #: Type*Type<=>>Type;
+`{(70)["<<=>>"](69)} = $builtin.IsoProcedure #: Type*Type<=>>Type;
+`List = $builtin.List : Type<=>>Type;
+`Set = $builtin.Set : Type<=>>Type; # note: Tuple converts to List and List converts to Set
+# there's no operator for Set, write Set[1,2,1]. Set convertsTo Type, being
+# the type of the Union of the members. (Tuple convertsTo List convertsTo Set).
+`Tuple = $builtin.Tuple : List Type <=>> Type;
+
+# [] -- empty list -- since Empty is below every other type, this converts to any List T
+``{["["] ["]"]} = $builtin.emptyList : List Empty;
+# [ 1,2,3 ] --- an explicit list is a list of the Union of the types of values
+#               so can't type it yet. Ditto for prepend
+`{["["] () ["," repeating0 prepend] () ["]"]} = $builtin.listOperator;
+# [1 | [2, 3]] -- but more used for pattern matching
+`{["["] () ["|"] () ["]"]} = $builtin.prependList;
+
+$builtin.PartialProcedure:,$builtin.TotalProcedure : Tuple[Type,Type]<=>>Type;
+
+# () - 0-tuple, aka unit:Unit ``{} is value not call
+``{["("] [")"]} = $builtin.zeroTuple = `unit : (Tuple[] = `Unit);
+# ( expr ) -- purely syntax, hence no AST
+# already defined as None:`{["("] () [")"]} = $builtin.identity : ``T<<=>>T;
+
+# ,42 - 1-tuple
+`{[","] (50)} = $builtin.oneTuple : ``T<<=>>Tuple[T];
+# 1,"x",.anatom - a tuple --- in the new syntax the required tuple is created by , operator
+`{(50) ["," repeating1 prepend] (50)} = $builtin.nTuple; # gets pythontuple, make wombat tuple
+
+# sometimes we want to pipe the input to the function, left assoc.
+`{(10)["|"]((9))} = $builtin.pipe = {:$=(`x,`f);f x} :``X*(X=>``Y)=>Y ;
+
+# case 3 of [{:$=2; 42},{:$=3; 420}]
+`{["case"] () ["of"] (999)} = $builtin.case : Tuple[``X,List(X=>``Y)]=>Y;
+`{["firstCase"] () ["of"] (999)} = $builtin.firstCase : Tuple[``X,List(X=>``Y)]=>Y;
+
+# type-related stuff. First need equality
+
+`Decideable (``T:Type,``TP:T=>>Prop) = < 
+    `decide: T`t=>>Union(TP(t),Not%(TP(t));
+>;
+`Relation (``X:Type, ``Y:Type) = <: `Rel%:X*Y<=>>Prop; >;
+`Equivalence ``T:Type = <Relation(T,T):
+    `refl% : ∀%{T`x=>>Prop: Rel%(x,x)};
+    `sym% : ∀%{T`x*T`y=>>Prop:  Rel%(x,y) Implies% Rel%(y,x)};
+    `trans% : ∀%{T`x*T`y*T`z=>>Prop: (Rel%(x,y) And% Rel%(y,z)) Implies% Rel%(x,z)};
+>;
+`Equality:Type`T=>>Equivalence(T) = $builtin.Equality;
+`Eq%(``T:Type) = Equality(T).Rel% ;
+
+`Neq%(``T:Type) : T*T=>>Prop; Neq% = Not% ($builtin.Eq%);
+`Distinguishable ``T:Type = Decideable(T*T,Eq%(T)); 
+
+# NOTE that there can be types with non-computable values. The Reals are an example.
+# Any actual value will be from some computable subtype. In this case (a) the
+# type with non computable values has "implementedBy $Virtual", and the subtypes "isa"
+# has "by $virtual". For practical purposes the implementation is the Union of subtypes.
+#`Prop : Type; # also Prop is a subtype of Type
+`Isa% = $builtin.Isa% : Tuple[Type,Type]<=>>Prop;
+`{(85)["isa"](85)["by"](85)} = $builtin.isa : Tuple[``X,``Y,X<=>>Y]<=>>Isa%(X,Y);
+Prop isa Type by $builtin.PropIsaType;
+# every type has an equality proposition Prop (i.e. Type) and an inequality Prop
+# see above `Eq% = $builtin.Eq% : Type``T=>>(Tuple[T,T]<=>>Prop);
+#           `Neq% = $builtin.Neq% : Type``T=>>(Tuple[T,T]<=>>Prop);
+`{(67)["And%"](67)} = $builtin.And% : Tuple[Prop,Prop]<=>>Prop;
+`{(67)["and%"](67)} = $builtin.and% : Tuple[``P:Prop,``Q:Prop]<=>>(P And% Q);
+`{(66)["Or%"](66)} = $builtin.Or% : Tuple[Prop,Prop]<=>>Prop;
+`toOr = $builtin.toOr : ``P=>>(P Or% ``Q);
+`Not% = $builtin.Not% : Prop=>>Prop;
+`operatorImplies% = `{(64)["Implies%"](65)} = {Tuple[Prop`P,Prop`Q]=>>Prop: Q Or% Not% P};
+`toImplies% : (``X=>>``Y)<<=>>(X Implies% Y);
+`{(66)["Iff%"](66)} = {Tuple[Prop`P,Prop`Q]=>>Prop: P Implies% Q And% Q Implies% P} = $builtin.Iff%;
+`{["∀%"](999)} = $builtin.Forall% : (``X=>>Prop)=>>Prop;
+`{["∃%"](999)} = $builtin.Exists% : (``X=>>Prop)=>>Prop;
+# @ gets the only value of a type or it fails if the type is known to be empty or more than 1 value
+# Commonly used for Props and subtypes of StructureTypes. Equivalent to _:T if T has 1 value
+`operatorAt = `{["@"](999)} = $builtin.At : Type``T => T;
+
+foreach P:Prop, p:P, q:P do @Eq%(P)(p,q) od # defining property of Props
+# i.e. if P is a Prop and x and y are in P then x=y, so P has 0 or 1 values;
+
+# behaviours are gone!!!
+###`Behaviour = `Behavior = $builtin.Behaviour : Type=>>Type;
+### `Monad = behaviour of Type=>>Type by <: ... ops and laws ...>
+###`{["behaviour"]["of"]()["extends" optional]()["by"](999)} =
+###     $builtin.behaviour : Tuple[Type``T,List[Behaviour T],Type]=>>Behaviour T;
+###`{["behavior"]["of"]()["extends" optional]()["by"](999)} = $builtin.behaviour;
+
+# Note that, by convention (not required) the structure type defining a ComformsTo
+# has 2 fields .what (the conforming thing) and .how (Any, but usually an atom).
+# Optional conformsTo Monad by _:<Monad: ...fill in ops and laws ...>
+# ConformsTo%(Nat,Associative)
+###`ConformsTo% = $builtin.ConformsTo% : foreach T:Type,X:T,B:Behaviour(T) do Tuple[X:T,B]=>>Prop od;
+###`{(998)["ConformsTo"](999)["by"](999)} = $builtin.ConformsTo : Tuple[Type``T,Behaviour``B,Type]=>>ConformsTo%(T,B(T));
+
+#### The olld newtype
+### NewType takes a Behaviour(Type) which defines a type uniquely
+##`{["NewType"](999)} = $builtin.NewType: Behaviour(Type)=>>Type;
+##`Implementation%(`New:Type,`Old:Type) : Prop;
+### The New<=>>Old give a unique Old value for each New (not all Old values correspond to a New). The procedure
+### uses the defining properties of the Old (implicitly or explicitly) to implement the defining properties of the new.
+##`{(999)["ImplementedBy"]()["by"](999)} = $builtin.implementedBy
+##   : Tuple[Type``New,Type``Old,New<=>>Old]<=>>Implementation%(New,Old);
+
+`{(90)[":%"](9)} = $builtin.SpecifyTypeProp : Tuple[``X,``T]=>>Prop;
+
+# we upgrade our isa declarations and other to create a (bounded order) lattice.
+foreach X:Type, Y:Type, Z:Type, IXY:Isa%(X,Y), IYZ:Isa%(Y,Z) do 
+  X isa Z by {X`x<=>>Z: IYZ.convert(IXY.convert(x))}; # will run backwards
+  X isa X by {X`x<=>>X: x};
+od; # The compiler remembers calculated Props in an efficient way
+
+# Union and Intersection are procedures from a Set(Type) to a new type. Sometimes that
+# is an existing type, but commonly it is a UnionType or an IntersectionType.
+# UnionType removes Unions from the offered set (by moving the constituents into the Set), 
+# and removes types that are below another in the Set. Union[X] returns X.
+`UnionType = $builtin.UnionType:Type;
+`Union = $builtin.Union : Set(Type)=>>Type;  
+# Note that IntersectionType removes Unions and Intersections and any Type above another in the Set
+`IntersectionType = $builtin.IntersectionType:Type;
+`Intersection = $builtin.Intersection : Set(Type)=>>Type; # Intersection[X] is X.
+
+Empty = Union[]; # no values, all properties
+Any = Intersection[]; # all values, no properties except attempt convert to lower type
+
+`NamedValue(``T) = <: `name:Atom; `value:T;>;
+`operatornamedValue = `{(999)["->"](77)} = {Atom`n*Any`v=>> <NamedValue($TypeOf(v)): @<NamedValue:name=n;value=v;>};
+# DisjointUnion type creator should check names are distinct. We could put that as a
+# restriction on the input type of named pairs.
+`DisjointUnion = $builtin.DisjointUnion : List (NamedValue(Type)) <=>> Type;
+
+# totalise takes a X=>Y and returns a X=>>Total(Y) 
+`Total(``Y)=DisjointUnion(.succeed->Y,.fail->Unit);
+`Totalise = { (X=>Y)`f =>> (X=>>Total(Y)):
+               {X`x=>>Total(Y): 
+                   firstCase x of [{:Total(Y).succeed(f x)},{:Total(Y).fail(unit)}]
+               }
+           };
+foreach X:Type,Y:Type, f:(X=>Y),g:(X=>Y) do Eq%(X=>Y) (f,g) =
+    ∀%{X`x1*X`x2=>>Prop: Eq%(X)(x1,x2) Implies% Eq%(Total(Y))(Totalise(f)x1,Totalise(g)x2) } od;
+foreach X:Type,Y:Type, f:(X=>>Y),g:(X=>>Y) do Eq%(X=>>Y) (f,g) =
+    ∀%{X`x1*X`x2=>>Prop: Eq%(X)(x1,x2) Implies% Eq%(Y)(f x1, g x2) } od;
+
+`{(90) ["//"] (7)} = $builtin.SubsetType : Tuple[``T,T=>>Prop]<=>>Type;
+
+# Relative to Type T, all types below are from an Intersection and all types above are from a Union.
+# So we can often just test for relative position. Also all types T that aren't already Unions are
+# interchangeable with Union[T], and types that aren't Unions or Intersections are
+# intercheable with Intersection[T]. In particular support .toUnion and .toIntersection.
+
+foreach ST:Set(Type), T:(Type//{:T in% ST}) do 
+  T isa Union(ST) by {T`t<=>>Union(ST):Union(ST).toUnion%(t)}; 
+  Intersection(ST) isa T by {Intersection(ST)`t<=>>T: Intersection(ST).fromIntersection%(T)t}; od;
+
+`ConvertsTo% = $builtin.ConvertsTo% : Tuple[Type``X,Type``Y]<=>>Prop;
+`{(999)["convertsTo"]()["by"](999)} = $builtin.convertsTo: 
+       Tuple[Type``X,Type``Y,X=>>Y]//{:Not%(_:% Intersection[X,Y])}=>>ConvertsTo%(X,Y);
+
+# note - removed = from first one
+`{(60)["<"|"<="|">"|">=" repeating1 prepend](60)} = $builtin.compareChainLeftOrFail;
+`{(60)["<?"|"<=?"|">?"|">=?"|"=?" repeating1 prepend](60)} = $builtin.compareChainBool;
+`{(60)["<%"|"<=%"|">%"|">=%"|"=%" repeating1 prepend](60)} = $builtin.compareChainProp;
+`{(60)["@<%"|"@<=%"|"@>%"|"@>=%"|"@=%" repeating1 prepend](60)} = $builtin.compareChainPropWitness;
+`{(70)["-"](71)} = $builtin.subtract;
