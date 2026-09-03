@@ -1,0 +1,60 @@
+In the following we assume we are targetting success. 
+
+A. procedure call
+
+We compile inwards. So when compiling f(x) we have a current view
+of the required output type. So first step is to look at f's codomain.
+We want to constrain f's type to have codomain lower than the current 
+required. If this is less than the current for the context then that
+constrains the context which can have other effects. If the context gets
+even lower then repeat. Eventually the context settles down.
+
+At this point we have constrained the type of f, since constraining
+the codomain will constrain the domain. Now we try to constrain the input
+expression's (i.e. x's) type to be below f's current domain. I.e. we
+look for a ConvertsTo% whose input is above x's type and whose output is
+below f's domain. This further constrains f and x which might further 
+constrain the context. We keep on till things settle down.
+
+B. identifiers
+
+The identifier will often be constrained by the context. This constrain 
+is a type. If the constraint is higher than the existing constraint for
+that identifier then the identifier-expression tells this to the context
+which can do an unknown amount of calculating before getting back to that
+identifier expression with a new context. If the expression's context
+is at some stage less than the constraint for the identifier then that
+constrains every expression with the identifier, setting off a different
+cascade of constraint. Eventually the identifier and the context agree.
+
+C. Closure
+
+There are two execution events for a closure. The first is building it from
+the context. The second is when it is called. Building it from context is
+a procedure from the identifiers in it to a procedure value of some sort.
+So that initial procedure can constrain the values of the identifiers 
+because of the type of the closure as required by the context. However
+closure's often come before a ";" and are not constrained at all. Maybe
+they are set equal to an identifier that is constrained elsewhere.
+
+D. Structure type
+
+Similar to closure. Creation of the type is unlikely to constrain the external
+identfiers in it.
+
+E. Foreach
+
+This creates families of constraints...
+
+F. Semicolon
+
+The result to the left is discarded (ignoring actions at the moment), so it
+has a type context of Any and no incentive to reduce it.
+
+G. Equal
+
+When expressions are equal, they all share a node. Constraints on any
+will cascade to the others.
+
+
+

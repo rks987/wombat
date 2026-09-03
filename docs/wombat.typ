@@ -461,8 +461,8 @@ as when we define a procedure with multiple constraints, for example:
   `not:Bool=>>Bool; not true = false; not false = true; ...
 ```
 
-There is a Behaviour named `Equivalence` for relations which are reflexive,
-symmetric and transitive. We then have a Behaviour `Distinguishable`
+There is a Sructure type named `Equivalence` for relations which are reflexive,
+symmetric and transitive. We then have a Structure `Distinguishable`
 which extends `Equivalence`. Types conforming to `Distinguishable` have
 a trio of operations such that defining any one of them will create
 the other 2. They are:

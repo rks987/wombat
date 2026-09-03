@@ -64,7 +64,7 @@ $builtin.PartialProcedure:,$builtin.TotalProcedure : Tuple[Type,Type]<=>>Type;
 # type-related stuff. First need equality
 
 `Decideable (``T:Type,``TP:T=>>Prop) = < 
-    `decide: T`t=>>Union(TP(t),Not%(TP(t));
+    `decide: T`t=>>Union(TP(t),Not%(TP(t)));
 >;
 `Relation (``X:Type, ``Y:Type) = <: `Rel%:X*Y<=>>Prop; >;
 `Equivalence ``T:Type = <Relation(T,T):
