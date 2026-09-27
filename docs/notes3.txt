@@ -21,3 +21,7 @@ values for Props) there is a total procedure which will return a value
 of the Union of the Proposition with its negation. Note that it is a
 very small stepp from there to a Bool value.
 A type T is Distinguishable if Eq%(T) is Decideable.
+
+4. A list of arbitrary procedures has type List(``X:Type=>``Y:Type). This converts
+to List(foreach X:,Y:Type do X=>Y od). The arg is a Set(Type) which converts
+to the Union of that Set in this context where a type is required.

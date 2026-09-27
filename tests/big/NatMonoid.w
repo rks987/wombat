@@ -8,7 +8,10 @@
        `induct:∀%{(Nat=>>Prop)`p=>>Prop:
            (p(zero) And% ∀%{Nat`n=>>Prop: p(n) Implies% p(succ n)})
            Implies% ∀%{Nat`n=>>Prop: p(n)} };
-       `IsDistinguishable = <Distinguishable(Nat): decide Nat`x*Nat`y = @ >
+       `IsDistinguishable = 
+           <Distinguishable(Nat)=Decideable(Nat*Nat,Eq%(Nat)): 
+               decide (Nat``x*Nat``y) = @ 
+           >
     > ; creates a $DefinedBy%(Nat, <...>) proposition witness
 Eq%(Nat) = Nat.IsDistinguihable.Eq%;
 # We can access Nat's defining structure type as ^Nat.

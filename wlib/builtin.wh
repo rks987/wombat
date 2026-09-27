@@ -57,15 +57,26 @@ $builtin.PartialProcedure:,$builtin.TotalProcedure : Tuple[Type,Type]<=>>Type;
 # sometimes we want to pipe the input to the function, left assoc.
 `{(10)["|"]((9))} = $builtin.pipe = {:$=(`x,`f);f x} :``X*(X=>``Y)=>Y ;
 
-# case 3 of [{:$=2; 42},{:$=3; 420}]
+# case 3 of [{:$=2; 42},{:$=3; 420}]  ### the following is WRONG FIXME
 `{["case"] () ["of"] (999)} = $builtin.case : Tuple[``X,List(X=>``Y)]=>Y;
 `{["firstCase"] () ["of"] (999)} = $builtin.firstCase : Tuple[``X,List(X=>``Y)]=>Y;
+`{["totalCase"] () ["of"] (999)} = $builtin.totalCase : Tuple[``X,List(X=>``Y)]=>Y;
 
 # type-related stuff. First need equality
 
 `Decideable (``T:Type,``TP:T=>>Prop) = < 
-    `decide: T`t=>>Union(TP(t),Not%(TP(t)));
+    `decideWitness: T``t=>>Union(TP(t),Not%(TP(t)));
+    `decideBool: T=>>Bool;
+    `decideSucceed: T``t=>[t]; # return self if Prop true, else fail
+    decideWitness ``t:T = case decideBool(t) of [
+        {:$=Bool.true;$builtin.proven:TP(t)}, {:$=Bool.false;$builtin.proven:Not%(TP(t))}]
+      = firstCase () of [{:decideSucceed(t);$builtin.proven:TP(t)},{:$builtin.proven:Not%(TP(t))}];
+    decideBool ``t:T = case decideWitness(t) of [{:$:TP(t);Bool.true},{:$:Not%(TP(t));Bool.false}]
+      = firstCase () of [{:decideSucceed(t);Bool.true},{:Bool.false}];
+    decideSucceed ``t:T = case decideWitness(t) of [{:$:TP(t);t},{:$:Not%(TP(t));$builtin.fail()}]
+      = case decideBool(t) of [{:$=Bool.true;t}, {:$=Bool.false;$builtin.fail()}];
 >;
+
 `Relation (``X:Type, ``Y:Type) = <: `Rel%:X*Y<=>>Prop; >;
 `Equivalence ``T:Type = <Relation(T,T):
     `refl% : ∀%{T`x=>>Prop: Rel%(x,x)};
@@ -75,8 +86,8 @@ $builtin.PartialProcedure:,$builtin.TotalProcedure : Tuple[Type,Type]<=>>Type;
 `Equality:Type`T=>>Equivalence(T) = $builtin.Equality;
 `Eq%(``T:Type) = Equality(T).Rel% ;
 
-`Neq%(``T:Type) : T*T=>>Prop; Neq% = Not% ($builtin.Eq%);
-`Distinguishable ``T:Type = Decideable(T*T,Eq%(T)); 
+`Neq%(``T:Type) : T*T=>>Prop; Neq%(T) (``x:T,``y:T) = Not% (Eq%(x,y));
+`Distinguishable ``T:Type = <Decideable(T*T,Eq%(T)):
 
 # NOTE that there can be types with non-computable values. The Reals are an example.
 # Any actual value will be from some computable subtype. In this case (a) the

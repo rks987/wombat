@@ -116,7 +116,11 @@ combined. If we can determine that 2 elements in the list are not
 equal (which is also always possible for `Distinguishable` types), 
 then the `combine` fails immediately.
 
-`combine` is used in many place in wombat.
+`combine` is used in many place in wombat. [[FIXME: The original idea
+was that a combine of two procedures would, at execution time, give
+the one that succeeds or check that the two results agree (in the
+intersection of their types). However for the advanced uses of wombat
+we need to check this for all possible inputs. ]]
 
 There is also `firstCase` which is the way such switch statements work in 
 other languages. If the procedures in the list are total, then `case` 
@@ -144,9 +148,9 @@ incomplete.
 Types with at most 1 value are Proposition Types, with the type being 
 regarded as a proposition, and the value, when present, being taken as 
 a witness that there is a proof of the proposition. We say that they 
-are of higher type `Prop` rather than `Type`. Following Lean4, we will regard 
-them as having a lower Universe level than `Type`. Currently there is
-no Universe system.
+are of higher type `Prop` rather than `Type`. Lean4 will regards 
+them as having a lower Universe level than `Type` but in wombat they
+are just a subtype of Type. Currently there is no Universe system.
 
 A term is an expression that, directly or indirectly, includes free 
 identifiers, typically because they are derived from the input type of 
@@ -274,7 +278,7 @@ big ones that take a set input) are LUB and GLB ops for the
 lattice. `UnionType` and `IntersectionType` are the new types whose
 key property is an antichain of 2 or more types -- in the case of
 `UnionType` it is also constrained to have no `UnionType`s, and in the case
-of `IntersectionType` it is constrained to have no `UnionType`s nor 
+of `IntersectionType` it is constrained to have neither `UnionType`s nor 
 `IntersectionType`s.
 
 For chains that are infinite upward we create a `Union` of the types in
@@ -429,9 +433,10 @@ types that have an empty intersection.
 There is a second conversion mechanism: `ConvertsTo`. This normally applies
 between types that have an empty intersection. Examples in the standard library
 include:
-- Tuples convert to a list whose type is the `Union` of the tuple's elements' types.
-- Lists convert to sets (by forgetting the order and removing duplicates).
-- Sets of `X` convert to the type `X` restricted to the values in the set.
+- `Tuple`s convert to a list whose type is the `Union` of the tuple's elements' types.
+- `List`s convert to `MultiSet`s (by forgetting the order).
+- `Multiset`s convert to `Set`s (by removing duplicates).
+- `Set`s of `X` convert to the type `X` restricted to the values in the set.
 We create these conversions with the `ConvertsTo` operator
 ```
   X ConvertsTo Y by {X=>>Y: expression }

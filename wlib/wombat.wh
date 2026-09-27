@@ -51,7 +51,7 @@
 
 # The result of a foreach expression is the Set of values of the expression
 # for those expressions that don't fail. When it is a set of type then we often
-# use the fact that a Set(Type) converts to the Union of that
+# use the fact that a Set(Type) converts to the Union of that Set.
 
 # we'll need semicolon and = in builtin.wh. ; marked associative for free identifier fixup
 %^operator Semicolon (2) [";" repeating1 prepend associative](2)
