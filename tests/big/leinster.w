@@ -34,6 +34,8 @@ Category``AA convertsTo AA.M by {Category`AA=>>((AA.Ob`A*AA.Ob`B)=>>AA.M) :
 `Isomorphism (``AA:Category) (``f:AA.M(``A,``B)) = 
     ∃%{AA.M(B,A)`g=>>Prop: AA.comp(f,g) =% AA.id(B) And% AA.comp(g,f) =% AA.id(A)};
 
+`{(9)["≅"](9)};  (``A ≅ ``B)  = Isomorphism _ (A,B);
+
 # p.16
 # construction 1.1.9
 # To create a category we need to provide values of those 6 fields.

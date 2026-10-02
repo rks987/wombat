@@ -10,7 +10,11 @@
            Implies% ∀%{Nat`n=>>Prop: p(n)} };
        `IsDistinguishable = 
            <Distinguishable(Nat)=Decideable(Nat*Nat,Eq%(Nat)): 
-               decide (Nat``x*Nat``y) = @ 
+               decideBool (Nat``x*Nat``y) = case (x,y) of [
+                   {:$=(zero,zero); Bool.true },
+                   {:$:[(zero,succ _),(succ _,zero)]; Bool.false },
+                   {:$=(succ`xx,succ`yy): decideBool(xx,yy)}
+               ]
            >
     > ; creates a $DefinedBy%(Nat, <...>) proposition witness
 Eq%(Nat) = Nat.IsDistinguihable.Eq%;
