@@ -1,55 +1,7 @@
 %/include /home/rks/sw/wombat/wlib/wombat.wh
 
-# within the structure definition, Nat refers to the implementing type
-`Nat:Type definedBy < Equality(Nat): # equality from implementing type
-       `zero:Nat;
-       `succ:Nat<=>>Nat; # TEmbed, backwards fails for zero.
-       `succNotZero:∀%{Nat`n=>>Prop:Neq%(Nat)(succ n,zero)};
-       `induct:∀%{(Nat=>>Prop)`p=>>Prop:
-           (p(zero) And% ∀%{Nat`n=>>Prop: p(n) Implies% p(succ n)})
-           Implies% ∀%{Nat`n=>>Prop: p(n)} };
-       `IsDistinguishable = 
-           <Distinguishable(Nat)=Decideable(Nat*Nat,Eq%(Nat)): 
-               decideBool (Nat``x*Nat``y) = case (x,y) of [
-                   {:$=(zero,zero); Bool.true },
-                   {:$:[(zero,succ _),(succ _,zero)]; Bool.false },
-                   {:$=(succ`xx,succ`yy): decideBool(xx,yy)}
-               ]
-           >
-    > ; creates a $DefinedBy%(Nat, <...>) proposition witness
-Eq%(Nat) = Nat.IsDistinguihable.Eq%;
-# We can access Nat's defining structure type as ^Nat.
-# we implicitly assert that ^Nat uniquely defines the Nat type, i.e.
-@∀%{DefinedBy%(`NatA,^Nat)*DefinedBy%(`NatB,^Nat): Eq%(Type)(NatA,NatB) };
-# if the compiler can't prove that it will complain and we'll have to help it
 
-`Magma = < : __base__ = `T:Type; `op:T*T=>>T; >;
-`Semigroup = <Magma: 
-                `assoc : ∀%{T`x*T`y*T`z=>>Prop: 
-                              op(x,op(y,z)) =% op(op(x,y),z) 
-                            }; 
-             >;
-`Monoid = <Semigroup: 
-              `unit:T; 
-              `twoSidedUnit: ∀%{T`x=>>Prop: op(x,unit) =% x =% op(unit,x)
-                                }; 
-          >;
-
-# NatWithAdd isEqual Nat. (Extra fields makes NatExt1 a subtype. However
-# the fields are derived from Nat's definition so the reverse also applies)
-`NatWithAdd:Type DefinedBy = <Nat:
-    `addNat: Nat*Nat=>>Nat;
-    addNat(``i,``j) = totalCase i of [
-        {[Nat.zero]: j},
-        {[Nat.succ `k]: Nat.succ(addNat(k,j))}
-    ];
-    `assocAddNat = @ ∀%{Nat`x*Nat`y*Nat`z=>>Prop: 
-        op(x,addNat(y,z)) =% addNat(addNat(x,y),z) };
-    `twoSidedUnit = @ ∀%{Nat`x=>>Prop: addNat(x,zero) =% x =% addNat(zero,x) };
-    `ConformsToMonoid .add = @ < Monoid: T=Nat; op=addNat; assoc=assocAddNat;
-                              unit=zero; twoSidedUnit=twoSidedUnitAddNat; >;
->;
-`{(50)["+"](50)} (``x:``T,``y:T) = (T.ConformsToMonoid.add:Monoid).op(x,y);
+#`{(50)["+"](50)} (``x:``T,``y:T) = (T.ConformsToMonoid.add:Monoid).op(x,y);
 # or we could just mention the operator then define it
 # `{(50)["+"](50)}; (``x:``T)+(``y:T) = T.ConformsToMonoid.add.op(x,y);
 

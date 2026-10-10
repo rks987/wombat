@@ -1,0 +1,17 @@
+List of required proofs
+
+1. Conversion compatibility
+When a new "convertsTo" is added, including "isa", we need to check
+against all the others, and iff the sources overlap (non-empty
+Intersection) and the destinations overlap, then prove that any
+diamond (two ways up from same source value) give the same result
+(where "same" means equal in the intersection of the respective types).
+
+2. Prop proof
+Given a Prop type, construct a value of that type.
+
+3. Combine
+Check that if more than one procedure gives an answer in a combine
+then the answers agree.
+ALSO: procedure with combine are a monoid with @(Any=>Empty) as unit.
+

@@ -1,5 +1,5 @@
 = Wombat
-Wombat, previously wombat3 or w3, is designed to be a general purpose programming 
+Wombat (design version 4) is designed to be a general purpose programming 
 language which is capable of including mathematical statements and proofs.
 == Significant Expressions
 Code can be at file level or in procedures. The main file is an expression, 
@@ -14,7 +14,7 @@ and `else` are suboperators.
  - `(` ... `) ` _(does nothing semantically)_
  - ... `,` ... `,` ... ` ` _(create a 3-tuple)_
  - ... `*` ... `*` ...` `  _(create a 3-tuple type)_
- - Note that `,` , `*` , `;` and others are repeating not binary operators.
+ - Note that `,` , `*` and others are repeating not binary operators.
   Prefix variant is the singular, so `(,3)` is a 1-tuple -- explicitly a `Tuple[Nat]=(*Nat)`.
  - Juxtaposition or space is a procedure call.
  - Types behave as procedures that constrain the parameter but return themselves.
@@ -40,9 +40,9 @@ equal. If we don't care, because it leads to branches which both lead to
 program success, then it is just a check and doesn't constrain the `x` or `y`.
 
 Code is easier to read if all expressions are targetting success. To make
-some contexts clear the `^` prefix operator to force success targetting.
-Plus the `^=` infix operator specifically for unification. Note that the
-`^` infix operator is for expoonentiation (indeed `X=>>Y` can be written `Y^X`).
+some contexts clear the `|` prefix operator to force success targetting.
+(Note that this is unrelated to the
+`|` infix operator which is procedure call with the operands reversed.)
 == Procedures, Functions, and Actions.
 Procedures have one input type and one output type, and can be:
 - Actions whose semantics are time dependent. I.e. impure, corresponding to
@@ -54,6 +54,7 @@ Procedures have one input type and one output type, and can be:
 There are *evil* variants of these 4, for code that peeks under the hood,
  allowing operations that don't respect the declared semantics.
  Evilness can be removed by proving that the declared semantics are respected.
+ Prefix the arrow with `🕱`, e.g. `Int 🕱=> Int`.
 
 Embeddings of type `X` in type `Y` are a pair of procedures, with the
  `X=>>Y` procedure being total, while the reverse `Y=>X` will fail for `Y`

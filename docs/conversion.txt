@@ -1,0 +1,17 @@
+Conversions
+
+In wombat, the type provided and the type required are rarely a perfect match. Often
+this is for the trivial reason that the type provided has got restricted to a
+single value. But more significant mismatches are also common.
+
+The conversion database at any time consists of propositions, mostly universally
+quantified. These are various Isa%(X,Y) and ConvertsTo%(X,Y). However every
+Isa% is also (converts to) a ConvertsTo%.
+
+So suppose we have an expression (or value) of type X and we need one of type Y.
+The is a single general rule:
+
+    - Find the Set of all A such that Isa%(A,X) -- call this SetIsaX.
+    - Find the Union of all types B such that ConvertsTo%(B,Y) -- call this ConvertsToY
+    - Call the Intersection of IsaX and ConvertsToY, BelowXandY
+    Converting X to BelowXandY might fail in which case there is no conversion
