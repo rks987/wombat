@@ -1,4 +1,4 @@
-= Wombat4
+= Wombat4 test
 
 This latest design of wombat is, even more than its predecessors, inspired 
 by great programming languages of the past.
