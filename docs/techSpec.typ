@@ -67,29 +67,29 @@ A value of type `Semigroup` has an `assoc` property value. But since it is a
 `Prop` type it has at most one value, and hence takes up 0 bits. It just
 constrains the other properties. We can constrain things more explicitly.
 ```
-`NatMagma = < Magme : T = Nat; > # some binary op on Nat
+`NatMagma = < Magma : T = Nat; > # some binary op on Nat
 ```
 Even if we constrain everything it is still a type (with one value):
 ```
 `NatAddMagmaType = < Magma: T = Nat; op = addNat; >
 ```
-Which is why we often need the `@` operator which returns the only value
-of a type:
+Which is why we often need the `@` operator which returns the value of a type 
+with only one:
 ```
 `NatAddMagma = @ NatAddMagmaType
 ```
-
-
+Types are created by a structure that uniquely characterises it.
 Here is the definition of the natural numbers:
 
 ```
-`Nat:Type definedBy < : 
-       `zero:Nat;
-       `succ:Nat<=>>Nat; # TEmbed, backwards fails for zero.
-       `succNotZero:∀%{Nat`n=>>Prop:Neq%(Nat)(succ n,zero)};
-       `induct:∀%{(Nat=>>Prop)`p=>>Prop:
-           (p(zero) And% ∀%{Nat`n=>>Prop: p(n) Implies% p(succ n)})
-           Implies% ∀%{Nat`n=>>Prop: p(n)} };
+`Nat = NewType < : 
+      `Nat = __unique__:Type;
+      `zero:Nat;
+      `succ:Nat<=>>Nat; # TEmbed, backwards fails for zero.
+      `succNotZero:∀%{Nat`n=>>Prop:Neq%(Nat)(succ n,zero)};
+      `induct:∀%{(Nat=>>Prop)`p=>>Prop:
+          (p(zero) And% ∀%{Nat`n=>>Prop: p(n) Implies% p(succ n)})
+          Implies% ∀%{Nat`n=>>Prop: p(n)} };
     > 
 ```
 A type can be primitive, in which case the defining properties
