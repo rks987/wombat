@@ -83,7 +83,7 @@ Here is the definition of the natural numbers:
 
 ```
 `Nat = NewType < : 
-      `Nat = __unique__:Type;
+      `Nat = __self__:Type;
       `zero:Nat;
       `succ:Nat<=>>Nat; # TEmbed, backwards fails for zero.
       `succNotZero:∀%{Nat`n=>>Prop:Neq%(Nat)(succ n,zero)};
@@ -93,10 +93,42 @@ Here is the definition of the natural numbers:
     > 
 ```
 A type can be primitive, in which case the defining properties
-of the type are axions. Normally a type has an implementation.
+of the type are axions. Alternatively a type has an implementation.
+The `NewType` operator's job is to confirm (possibly helped by pragmas
+in the code) that 2 implementations of the type will be isomorphic.
 An implementation uses the defining properties of the implementing
-type to construct a 
+type to construct an instance of the implemented type's spec.
 ```
+Nat implementedBy @< Nat.specification : Nat = Set(Any); zero = Set[]; ...>
+```
+But we have left out the important property of equality.
+=== Equality
+Primitive types have computable equality and inequality. This is
+typically just whether their values as bitstrings are or are not the
+same.
+
+Other types inherit a minimal equality from their implmentations:
+if two values have equal implementations then they are equal. Every type
+`T` has a function from pairs of `T` values to a `Prop` `Eq%(T)(x,y)`,
+and anoth to Neq%(T)(x,y). Suppose that `T` is the type of total functions
+from `X` to `Y`. Then we declare `Eq%(X=>>Y)(f,g)` to specify that
+equal values of X always go to equal values of Y, so
+```
+foreach X:Type,Y:Type, f:(X=>>Y),g:(X=>>Y) do 
+    Eq%(X=>>Y) (f,g) =
+        ∀%{X`x1*X`x2=>>Prop: Eq%(X)(x1,x2) Implies% Eq%(Y)(f x1, g x2) };
+    Neq%(X=>>Y)(f,g) = 
+        ∃%{X`x1*X`x2=>>Prop: Eq%(X)(x1,x2) And% Neq%(Y)(f x1, g x2) } 
+od;
+```
+
+
+```
+
+
+
+
+
 `Nat:Type definedBy < Equality(Nat): # equality from implementing type
        `zero:Nat;
        `succ:Nat<=>>Nat; # TEmbed, backwards fails for zero.
