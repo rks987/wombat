@@ -1,4 +1,4 @@
-= Wombat4 test
+= Wombat4
 
 This latest design of wombat is, even more than its predecessors, inspired 
 by great programming languages of the past.
@@ -83,23 +83,28 @@ Here is the definition of the natural numbers:
 
 ```
 `Nat = NewType < : 
-      `Nat = __self__:Type;
+      `Nat = __self__; # use a more natural convenient name
       `zero:Nat;
       `succ:Nat<=>>Nat; # TEmbed, backwards fails for zero.
-      `succNotZero:∀%{Nat`n=>>Prop:Neq%(Nat)(succ n,zero)};
+      `succNotZero:∀%{Nat`n=>>Prop: Neq%(Nat)(succ n,zero)};
       `induct:∀%{(Nat=>>Prop)`p=>>Prop:
           (p(zero) And% ∀%{Nat`n=>>Prop: p(n) Implies% p(succ n)})
           Implies% ∀%{Nat`n=>>Prop: p(n)} };
-    > 
+    >
 ```
+`NewType` requires that, if there are 2 types with the same properties
+then they are isomorphic, meaning that there is a unique 1-1 correspondence
+between the values of the 2 types which will provide all the properties.
+We don't guarantee that the type exists in wombat's necessarily 
+computable world. It is permitted that only computable values of
+the type can be constructed.
+
 A type can be primitive, in which case the defining properties
-of the type are axions. Alternatively a type has an implementation.
-The `NewType` operator's job is to confirm (possibly helped by pragmas
-in the code) that 2 implementations of the type will be isomorphic.
+of the type are axioms. Alternatively a type has an implementation.
 An implementation uses the defining properties of the implementing
 type to construct an instance of the implemented type's spec.
 ```
-Nat implementedBy @< Nat.specification : Nat = Set(Any); zero = Set[]; ...>
+Nat implementedBy @< Nat.specification : Nat = List(Unit); zero = []:List(Unit); ...>
 ```
 But we have left out the important property of equality.
 === Equality
@@ -110,7 +115,7 @@ same.
 Other types inherit a minimal equality from their implmentations:
 if two values have equal implementations then they are equal. Every type
 `T` has a function from pairs of `T` values to a `Prop` `Eq%(T)(x,y)`,
-and anoth to Neq%(T)(x,y). Suppose that `T` is the type of total functions
+and another to Neq%(T)(x,y). Suppose that `T` is the type of total functions
 from `X` to `Y`. Then we declare `Eq%(X=>>Y)(f,g)` to specify that
 equal values of X always go to equal values of Y, so
 ```
