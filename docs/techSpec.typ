@@ -58,14 +58,18 @@ We can define basic mathematical structures:
 `Semigroup = 
   < Magma : `assoc : ∀%{T`x*T`y*T`z=>>Prop: op(x,op(y,z)) =% op(op(x,y),z) };  >;
 ```
-Inside the structure definitions `T`, `op` and `assoc` are just identifiers
+Inside the structure definitions: `T`, `op` and `assoc` are just identifiers
 constrained by their types. Outside they are properties defined by their
-corresponding atoms: `.T`, `.op` and `.assoc`, So if we have a `S:Semigroup`
+corresponding atoms: `.T`, `.op` and `.assoc`, So if we have an `S:Semigroup`
 then we can access its `op` property as `S.op`.
 
 A value of type `Semigroup` has an `assoc` property value. But since it is a
-`Prop` type it has at most one value, and hence takes up 0 bits. It just
-constrains the other properties. We can constrain things more explicitly.
+`Prop` type it has in this case one value, and hence takes up 0 bits. It just
+constrains the other properties. There is information in the type that can be
+accessed, but it will vary as to how much of that needs to carried around at 
+run time.
+
+We can constrain things more explicitly.
 ```
 `NatMagma = < Magma : T = Nat; > # some binary op on Nat
 ```
@@ -78,6 +82,11 @@ with only one:
 ```
 `NatAddMagma = @ NatAddMagmaType
 ```
+When we access a property of a structure value we get the value, but when we
+access the property of a structure type we get the type. So 
+`NatAddMagma.T` is `Nat`, but `NatAddMagmaType.T` is `Type` restricted to
+the single value `Nat` (which, as we will see, we write `Type/{: $ =% Nat}`).
+
 Types are created by a structure that uniquely characterises it.
 Here is the definition of the natural numbers:
 
@@ -106,7 +115,12 @@ type to construct an instance of the implemented type's spec.
 ```
 Nat implementedBy @< Nat.specification : Nat = List(Unit); zero = []:List(Unit); ...>
 ```
-But we have left out the important property of equality.
+An implementation need only (and can only) implement the computable
+values of the type. For example if we define the `Real` type via
+convergent series of `Rational`s then perforce the infinite series of 
+rationals we can define arise from code and are computable.
+
+In the above we have left out the required property of equality.
 === Equality
 Primitive types have computable equality and inequality. This is
 typically just whether their values as bitstrings are or are not the
@@ -114,7 +128,7 @@ same.
 
 Other types inherit a minimal equality from their implmentations:
 if two values have equal implementations then they are equal. Every type
-`T` has a function from pairs of `T` values to a `Prop` `Eq%(T)(x,y)`,
+`T` has a function from pairs of `T` values to a `Prop` type `Eq%(T)(x,y)`,
 and another to Neq%(T)(x,y). Suppose that `T` is the type of total functions
 from `X` to `Y`. Then we declare `Eq%(X=>>Y)(f,g)` to specify that
 equal values of X always go to equal values of Y, so
@@ -126,8 +140,11 @@ foreach X:Type,Y:Type, f:(X=>>Y),g:(X=>>Y) do
         ∃%{X`x1*X`x2=>>Prop: Eq%(X)(x1,x2) And% Neq%(Y)(f x1, g x2) } 
 od;
 ```
-
-
+The `=` in the above look like a declaration, but actually they are
+just a constraint. The rule is that constraints turn into declarations
+when not meeting contrary constraints. We have another constraint
+when `f` and `g` have the same implementation, and the constraints
+agree where both are defined.
 ```
 
 
