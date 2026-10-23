@@ -41,6 +41,7 @@ program success, then it is just a check and doesn't constrain the `x` or `y`.
 
 Code is easier to read if all expressions are targetting success. To make
 some contexts clear the `|` prefix operator to force success targetting.
+This has a low precedence and will cover everything to the next semicolon.
 (Note that this is unrelated to the
 `|` infix operator which is procedure call with the operands reversed.)
 == Procedures, Functions, and Actions.
@@ -62,7 +63,8 @@ Embeddings of type `X` in type `Y` are a pair of procedures, with the
  procedures are required to be inverses where either is defined. If `f`
  is a `X<=>>Y`, then `f.to` is the forward total procedure and `f.rev` is
  the reverse partial procedure. However `f` alone will convert to `f.to`
- with a non-Atom argument, and `f⁻¹` is always `f.rev`.
+ with a non-Atom argument, and `f⁻¹` is always `f.rev`. If the reverse
+ is also total we have type `X<<=>>Y`, but otherwise it is the same.
 == Closures
 Non-primitive procedures are created with closures which have the form:
 ```

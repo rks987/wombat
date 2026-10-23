@@ -25,3 +25,9 @@ A type T is Distinguishable if Eq%(T) is Decideable.
 4. A list of arbitrary procedures has type List(``X:Type=>``Y:Type). This converts
 to List(foreach X:,Y:Type do X=>Y od). The arg is a Set(Type) which converts
 to the Union of that Set in this context where a type is required.
+
+5. If we have a value t, and we want it's type we can write
+(`T:Type)t, since a type returns itself as well as constraining
+its parameter. However this will commonly occur in a context
+requiring a type, in which case we can just write `T:t. If we
+don't want to create an identifier then use TypeOf(t).
