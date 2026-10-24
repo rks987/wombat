@@ -115,7 +115,7 @@ same.
 Other types inherit a minimal equality from their implmentations:
 if two values have equal implementations then they are equal. Every type
 `T` has a function from pairs of `T` values to a `Prop` `Eq%(T)(x,y)`,
-and another to Neq%(T)(x,y). Suppose that `T` is the type of total functions
+and another to `Neq%(T)(x,y)`. Suppose that `T` is the type of total functions
 from `X` to `Y`. Then we declare `Eq%(X=>>Y)(f,g)` to specify that
 equal values of X always go to equal values of Y, so
 ```
