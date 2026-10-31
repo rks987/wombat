@@ -13,5 +13,5 @@ Given a Prop type, construct a value of that type.
 3. Combine
 Check that if more than one procedure gives an answer in a combine
 then the answers agree.
-ALSO: procedure with combine are a monoid with @(Any=>Empty) as unit.
+ALSO: procedure with combine are a monoid with @(Empty=>Empty) as unit.
 
