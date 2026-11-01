@@ -20,7 +20,8 @@ by great programming languages of the past.
  type and conversions both ways are available. Proposition related operators
  are usually indicated with a trailing `%`. Proposition types are used to include
  the laws for types in their defining structure.
-- User defined operators are inspired by Agda, but are more general.
+- User defined operators are inspired by Agda, but are more general and a bit
+ trickier to use.
 
 The extra that wombat adds is to place the types in an order lattice that is
  intended to closely follow the inclusion hierarchy of sets. The type system
@@ -51,8 +52,9 @@ and `else` are called "suboperators")
 
 == Types and Structures
 
-A structure has the form `< parent : expression >`. The value of the expression is ignored.
-We can define basic mathematical structures:
+A structure has the form `< parent : expression >`. The value of the expression is ignored,
+and we can end the expression with a semicolon to indicate that there is no useful
+value produced. We can define basic mathematical structures:
 ```
 `Magma = < : `T:Type; `op:T*T=>>T; >;
 `Semigroup = 
@@ -65,7 +67,7 @@ then we can access its `op` property as `S.op`.
 
 A value of type `Semigroup` has an `assoc` property value. But since it is a
 `Prop` type it has in this case one value, and hence takes up 0 bits. It just
-constrains the other properties. There is information in the type that can be
+constrains the other properties. There is information in `assoc`s type. and that can be
 accessed, but it will vary as to how much of that needs to carried around at 
 run time.
 
@@ -82,17 +84,26 @@ with only one:
 ```
 `NatAddMagma = @ NatAddMagmaType
 ```
-When we access a property of a structure value we get the value, but when we
-access the property of a structure type we get the type. So 
-`NatAddMagma.T` is `Nat`, but `NatAddMagmaType.T` is `Type` restricted to
-the single value `Nat` (which, as we will see, we write `Type/{: $ =% Nat}`).
+We need equivalence and equality.
+```
+`Relation (``X:Type, ``Y:Type) = <: `Rel%:X*Y<=>>Prop; >;
+`Equivalence ``T:Type = <Relation(T,T):
+    `refl% : ∀%{T`x=>>Prop: Rel%(x,x)};
+    `sym% : ∀%{T`x*T`y=>>Prop:  Rel%(x,y) Implies% Rel%(y,x)};
+    `trans% : ∀%{T`x*T`y*T`z=>>Prop: (Rel%(x,y) And% Rel%(y,z)) Implies% Rel%(x,z)};
+>;
+`Equality:Type`T=>>Equivalence(T) = $builtin.Equality;
+`Eq%(``T:Type) = Equality(T).Rel% ;
+```
 
-Types are created by a structure that uniquely characterises it.
+Types are defineded by a structure that uniquely characterises it.
+Uniqueness means that if there are 2 implementations then there is exactly
+one way to create a one to one correspondence between them.
 Here is the definition of the natural numbers:
 
 ```
 `Nat = NewType < : 
-      `Nat = __self__; # use a more natural convenient name
+      `Nat = __self__; # create a more natural convenient name
       `zero:Nat;
       `succ:Nat<=>>Nat; # TEmbed, backwards fails for zero.
       `succNotZero:∀%{Nat`n=>>Prop: Neq%(Nat)(succ n,zero)};
@@ -113,7 +124,8 @@ of the type are axioms. Alternatively a type has an implementation.
 An implementation uses the defining properties of the implementing
 type to construct an instance of the implemented type's spec.
 ```
-Nat implementedBy @< Nat.specification : Nat = List(Unit); zero = []:List(Unit); ...>
+Nat implementedBy @< Nat.__specification__ : 
+                       Nat = List(Unit); zero = []:List(Unit); ...>
 ```
 An implementation need only (and can only) implement the computable
 values of the type. For example if we define the `Real` type via
@@ -143,7 +155,7 @@ od;
 The `=` in the above look like a declaration, but actually they are
 just a constraint. The rule is that constraints turn into declarations
 when not meeting contrary constraints. We have another constraint
-when `f` and `g` have the same implementation, and the constraints
+when `f` and `g` have the same implementation, and those constraints
 agree where both are defined.
 ```
 
