@@ -67,7 +67,7 @@ then we can access its `op` property as `S.op`.
 
 A value of type `Semigroup` has an `assoc` property value. But since it is a
 `Prop` type it has in this case one value, and hence takes up 0 bits. It just
-constrains the other properties. There is information in `assoc`s type. and that can be
+constrains the other properties. There is information in `assoc`'s type. and that can be
 accessed, but it will vary as to how much of that needs to carried around at 
 run time.
 
@@ -84,9 +84,9 @@ with only one:
 ```
 `NatAddMagma = @ NatAddMagmaType
 ```
-We need equivalence and equality.
+We will need equivalence and equality.
 ```
-`Relation (``X:Type, ``Y:Type) = <: `Rel%:X*Y<=>>Prop; >;
+`Relation (``X:Type, ``Y:Type) = < : `Rel%:X*Y<=>>Prop; >;
 `Equivalence ``T:Type = <Relation(T,T):
     `refl% : ∀%{T`x=>>Prop: Rel%(x,x)};
     `sym% : ∀%{T`x*T`y=>>Prop:  Rel%(x,y) Implies% Rel%(y,x)};
@@ -139,7 +139,7 @@ which becomes the default equality for the implemented type.
 Rational ImplementedBy (
     `UnNormRat = < : `n:Integer; `d:Integer; `dNot0: d ≠% 0;>,
     @< Equivalence(UnNormRat): # refl%, etc left for compiler to do
-        Rel% (``x,``y) = x.n * y.d = y.n * x.d;
+        Rel% (``x,``y) = (x.n * y.d =% y.n * x.d);
     >,
     {UnNormRat`unr=>>Rational: @<Rational:
         numerator = unr.n / Integer.gcd(unr.n,unr.d);
@@ -156,14 +156,20 @@ values of the type. For example if we define the `Real` type via
 convergent series of `Rational`s then perforce the infinite series of 
 rationals we can define arise from code and are computable.
 
-In the above we have left out the required property of equality.
 === Equality
 Primitive types have computable equality and inequality. This is
 typically just whether their values as bitstrings are or are not the
 same.
 
-Other types inherit a minimal equality from their implmentations:
-if two values have equal implementations then they are equal. Every type
+Other types have equality and inequality `Prop`s. For ordinary types
+representing data these are usually computable. For types that involve
+a computational element there will not be a general method, using the
+types properties, that can confirm that 2 values are equal or not.
+However there can be a definition of the `Prop` type that declares
+what needs to be proved to establish equality or inequality.
+
+Other types inherit some equality from their implmentations which come
+with an equivalence relation that turns into the new type's equality. Every type
 `T` has a function from pairs of `T` values to a `Prop` type `Eq%(T)(x,y)`,
 and another to `Neq%(T)(x,y)`. Suppose that `T` is the type of total functions
 from `X` to `Y`. Then we declare `Eq%(X=>>Y)(f,g)` to specify that
