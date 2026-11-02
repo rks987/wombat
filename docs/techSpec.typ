@@ -96,7 +96,7 @@ We need equivalence and equality.
 `Eq%(``T:Type) = Equality(T).Rel% ;
 ```
 
-Types are defineded by a structure that uniquely characterises it.
+Types are defined by a structure that uniquely characterises it.
 Uniqueness means that if there are 2 implementations then there is exactly
 one way to create a one to one correspondence between them.
 Here is the definition of the natural numbers:
@@ -117,12 +117,36 @@ then they are isomorphic, meaning that there is a unique 1-1 correspondence
 between the values of the 2 types which will provide all the properties.
 We don't guarantee that the type exists in wombat's necessarily 
 computable world. It is permitted that only computable values of
-the type can be constructed.
+the type can be constructed in the implementations.
 
 A type can be primitive, in which case the defining properties
-of the type are axioms. Alternatively a type has an implementation.
+of the type are axioms. Primitive types, and functions returning
+primitive types, are identified by an atom name in the `$builtin`
+namespace.
+
+Alternatively a type has an implementation.
 An implementation uses the defining properties of the implementing
 type to construct an instance of the implemented type's spec.
+It also provides an equivalence relation on the implementing type
+which becomes the default equality for the implemented type.
+```
+`Rational = NewType < :
+        `Rational = __self__;
+        `numerator: Integer;
+        `denominator: Integer//{:$ >% 0};
+        `mutuallyPrime: Integer.gcd(numerator,denominator) =% 1;
+    >;
+Rational ImplementedBy (
+    `UnNormRat = < : `n:Integer; `d:Integer; `dNot0: d ≠% 0;>,
+    @< Equivalence(UnNormRat): # refl%, etc left for compiler to do
+        Rel% (``x,``y) = x.n * y.d = y.n * x.d;
+    >,
+    {UnNormRat`unr=>>Rational: @<Rational:
+        numerator = unr.n / Integer.gcd(unr.n,unr.d);
+        denominator = unr.d / Integer.gcd(unr.n,unr.d);
+        > # we left mutuallyPrime for the compiler
+    }
+```
 ```
 Nat implementedBy @< Nat.__specification__ : 
                        Nat = List(Unit); zero = []:List(Unit); ...>
