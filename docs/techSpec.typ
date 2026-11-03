@@ -48,7 +48,7 @@ a double backtick to say this is a new free identifier (explained later). A sequ
 of backticks always breaks on its left, and a sequence of primes on its right.
 Identifiers and sequences of other characters can be suboperators which are
 separators in an operator (for example in the if-then-else operator, `if`, `then`
-and `else` are called "suboperators")
+and `else` are called "suboperators").
 
 == Types and Structures
 
@@ -80,14 +80,14 @@ Even if we constrain everything it is still a type (with one value):
 `NatAddMagmaType = < Magma: T = Nat; op = addNat; >
 ```
 Which is why we often need the `@` operator which returns the value of a type 
-with only one:
+with only one (which we also frequently need for the values of `Prop` types):
 ```
 `NatAddMagma = @ NatAddMagmaType
 ```
-We will need equivalence and equality.
+We will soon need equivalence and equality.
 ```
 `Relation (``X:Type, ``Y:Type) = < : `Rel%:X*Y<=>>Prop; >;
-`Equivalence ``T:Type = <Relation(T,T):
+`Equivalence ``T:Type = < Relation(T,T) :
     `refl% : ∀%{T`x=>>Prop: Rel%(x,x)};
     `sym% : ∀%{T`x*T`y=>>Prop:  Rel%(x,y) Implies% Rel%(y,x)};
     `trans% : ∀%{T`x*T`y*T`z=>>Prop: (Rel%(x,y) And% Rel%(y,z)) Implies% Rel%(x,z)};
@@ -97,8 +97,10 @@ We will need equivalence and equality.
 ```
 
 Types are defined by a structure that uniquely characterises it.
-Uniqueness means that if there are 2 implementations then there is exactly
-one way to create a one to one correspondence between them.
+Uniqueness means that if there are 2 implementations then there is 
+a one to one correspondence between them and exactly
+one way to create it.
+
 Here is the definition of the natural numbers:
 
 ```
@@ -112,9 +114,6 @@ Here is the definition of the natural numbers:
           Implies% ∀%{Nat`n=>>Prop: p(n)} };
     >
 ```
-`NewType` requires that, if there are 2 types with the same properties
-then they are isomorphic, meaning that there is a unique 1-1 correspondence
-between the values of the 2 types which will provide all the properties.
 We don't guarantee that the type exists in wombat's necessarily 
 computable world. It is permitted that only computable values of
 the type can be constructed in the implementations.
@@ -141,7 +140,7 @@ Rational ImplementedBy (
     @< Equivalence(UnNormRat): # refl%, etc left for compiler to do
         Rel% (``x,``y) = (x.n * y.d =% y.n * x.d);
     >,
-    {UnNormRat`unr=>>Rational: @<Rational:
+    {UnNormRat`unr=>>Rational: @ < Rational :
         numerator = unr.n / Integer.gcd(unr.n,unr.d);
         denominator = unr.d / Integer.gcd(unr.n,unr.d);
         > # we left mutuallyPrime for the compiler
