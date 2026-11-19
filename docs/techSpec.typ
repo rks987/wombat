@@ -178,7 +178,7 @@ foreach X:Type,Y:Type, f:(X=>>Y),g:(X=>>Y) do
     Eq%(X=>>Y) (f,g) =
         ∀%{X`x1*X`x2=>>Prop: Eq%(X)(x1,x2) Implies% Eq%(Y)(f x1, g x2) };
     Neq%(X=>>Y)(f,g) = 
-        ∃%{X`x1*X`x2=>>Prop: Eq%(X)(x1,x2) And% Neq%(Y)(f x1, g x2) } 
+        ∃%{X`x1*X`x2=>>Prop: Eq%(X)(x1,x2) And% Neq%(Y)(f x1, g x2) }; 
 od;
 ```
 The `=` in the above look like a declaration, but actually they are

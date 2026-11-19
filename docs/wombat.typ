@@ -55,15 +55,16 @@ Procedures have one input type and one output type, and can be:
 There are *evil* variants of these 4, for code that peeks under the hood,
  allowing operations that don't respect the declared semantics.
  Evilness can be removed by proving that the declared semantics are respected.
- Prefix the arrow with `🕱`, e.g. `Int 🕱=> Int`.
+ Prefix the arrow with `🕱`, e.g. `Int🕱=>Int`.
 
 Embeddings of type `X` in type `Y` are a pair of procedures, with the
  `X=>>Y` procedure being total, while the reverse `Y=>X` will fail for `Y`
  values that do not come from an `X`. The type is written `X<=>>Y`. The two
  procedures are required to be inverses where either is defined. If `f`
- is a `X<=>>Y`, then `f.to` is the forward total procedure and `f.rev` is
- the reverse partial procedure. However `f` alone will convert to `f.to`
- with a non-Atom argument, and `f⁻¹` is always `f.rev`. If the reverse
+ is a `X<=>>Y`, then `(X<=>>Y).to(f)` is the forward total procedure 
+ and `(X<=>>Y).rev(f)` is
+ the reverse partial procedure. However `f` alone will convert to the `.to`
+ direction, and `f⁻¹` is always the `.rev` direction. If the reverse
  is also total we have type `X<<=>>Y`, but otherwise it is the same.
 == Closures
 Non-primitive procedures are created with closures which have the form:
@@ -80,7 +81,8 @@ but also in the output-type (dependent type). For example:
   `f = { List(X)`lx =>> Vector(lx.len,X) : ... }
 ```
 We can also decorate the output, in which case the result of the procedure 
-is derived from relevant assignments and the end result of the expression 
+is constrained by relevant assignments to those identifiers, and if
+those constraints specify the output then the end result of the expression 
 is ignored, for example:
 ```
   `f = { Int`x*Int`y=>>Int`z : z=x-y; debug.log "x=" x}; ...
@@ -90,7 +92,7 @@ with exactly one value) then the result of the expression is
 returned. If the output type is omitted then the inferred type of the 
 expression is used. If the arrow is omitted then the compiler will give 
 the best arrow it can infer, and the output type must also be missing. 
-If the input type is missing then `Any` is assumed. Ths input value can 
+If the input type is missing then `Any` is assumed. The input value can 
 be accessed as `$` and this is the 
 only way when the input type is omitted from the head of the closure.
 The output value can be accessed as ``` `$```. whose
@@ -101,37 +103,31 @@ expression is capable of being run backwards and the closure then creates
 an embedding. One can write the code so that it also constructs the input 
 from the output as well as in the forward direction. 
 == Case and Combine
-The `case` expression has the form `case` _expression_ `of` _list-expression_, 
-where the list is a list of procedures. For each of the procedures in the list 
-where the expression has, or converts to, the input type of the expression, 
-then it calls that procedure. If all calls fail then the `case` expression 
-fails, otherwise the result of the `case` is the `combine` of the results. 
-If all the elements of `y` are procedures then
-```
-  case x of y = combine y x
-```
-In general the `combine` of a list is the common value if that can be 
-determined (which is always the case if the type is `Distinguishable`), 
-otherwise it checks if the type conforms to `Combinable` and applies 
-the `combine` operation. For procedures that will be equivalent to 
-the `case` operation, and if that returns procedures then they are 
-combined. If we can determine that 2 elements in the list are not 
-equal (which is also always possible for `Distinguishable` types), 
-then the `combine` fails immediately.
+The meaning of "fail" in wombat is usually "look elsewhere" rather than
+something more fatal. In particular we can combine procedures. To call
+our combined procedure we: call all of them; ignore the ones that fail;
+if more than one succeeds the results must agree and we return that
+result. Actually we only call the ones whose domain is compatible with
+the argument.
 
-`combine` is used in many place in wombat. [[FIXME: The original idea
-was that a combine of two procedures would, at execution time, give
-the one that succeeds or check that the two results agree (in the
-intersection of their types). However for the advanced uses of wombat
-we need to check this for all possible inputs. ]]
+We combine procedures with the `+` operator. Combining procedures form
+a (commutative) monoid. The identity is the unque procedure `Empty=>>Empty`
+that always fails. We can use `+` because there is no overlap with other
+uses of `+` such as for numbers and strings.
 
-There is also `firstCase` which is the way such switch statements work in 
-other languages. If the procedures in the list are total, then `case` 
-calls the ones whose domain match the parameter's type and try to 
-`combine` the results. There is a `totalCase` variant where at least
-one domain must match and the `combine` is required to succeed. The
-proof is then likely to be easiest when the domains cover the possible 
-inputs and don't overlap.
+Calling a combined procedure is the way to do a case/switch operator in
+other languages. We typically use the `|` infix operator to call with
+the argument followed by the procedure. For example if our argument, `ii`, is
+an `Int` we can check for `0` or `1` by
+```
+  ii | ({Int=>Int: ii=0 } + {Int=>Int: ii=1 }); # returns 0 or 1 or fails
+```
+Combining procedures is implicitly used in many ways in wombat when there
+are multiple ways to do things that need to be compatible. For example
+integers have there own addition, but also inherit addition from the
+rationals and we combine them and they agree when both succeed which is
+when the arguments are both integer. This, including the meaning of "agree",
+is an aspect of the type hierarchy described later.
 == Types
 A type has a defining collection of properties. It is either primitive, 
 in which case it has an inbuilt implementation, or it (usually) has an 
@@ -161,7 +157,7 @@ a procedure.
 
 Syntactically, the suboperators we use for `Prop`s are similar 
 to those for the tests 
-used for flow control, with the variation that: (a) text suboperators have 
+used for flow control, with the variation that: (a) type suboperators have 
 the first letter capitalised; and (b) proposition suboperators have a percent (`%`) 
 postfix. So:
 - `x < y` returns its left argument (`x`) or fails;
@@ -380,8 +376,7 @@ The `//` operator coerces its 2nd argument to be a total procedure
 from the type on the left to `Prop`. So we can always just write
 `{: expression}`, using `$` for the input.
 
-Subset types inherit all their properties from their parent type, 
-plus the dependent proposition.
+Subset types inherit all their properties from their parent type.
 
 Subset types make the type hierarchy vastly bigger, and introduce 
 `isa` relations based on proposition implication.
@@ -407,12 +402,13 @@ that will run backwards for input greater than 1:
 ```
   `factorial = 
     {Nat`n=>>Nat`fn:
-      fn = case n of [{Nat 0: 1}, {Nat(`m+1): n*factorial(m)}];
-      n = if fn>?1 then 
-        {: `f2n = {Nat`k*Nat`f=>Nat: if k==f then {:k} else {:f2n(k+1,(f/k)}}; 
-        # note f/k is Rational, converting to Nat and might fail running backwards
-        f2n(2,fn)  # 
-      } else {:n} # when n isn't supplied, this else won't advance its determination
+      fn = n | ({Nat 0: 1} + {Nat(`m+1): n*factorial(m)});
+      `f2n = fn | (
+        {: fn>1; {Nat`k*Nat`f=>Nat: if k==f then {:k} else {:f2n(k+1,(f/k)} fi }
+      +   # note f/k is Rational, converting to Nat and might fail
+        {: fn<2; {Nat`k*Nat`f=>Nat: n} } # won't advance n's determination
+      ); 
+      n = f2n(2,fn);
     } # not an embedding because 0 and 1 both map to 1 
 ```
 In a total function, and indeed in any expression with no action calls, 

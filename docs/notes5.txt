@@ -1,0 +1,92 @@
+
+Creating types
+
+Structure types are automatically created s needed.
+
+Other types are defined by structure type that is unique, in the sense that if 
+you have two values of that structure type then there is an isomorphism
+between them:
+
+NewType = < :
+    `Spec : StructureType;
+    `Unique : Spec`s1*Spec`s=>>Isomorphism%(s1,s2)'
+>;
+`NatSpec = < : 
+    `Nat:Type
+    `zero:Nat;
+    `succ:Nat<=>>Nat; # TEmbed, backwards fails for zero.
+    `succNotZero:∀%{Nat`n=>>Prop: Neq%(Nat)(succ n,zero)};
+    `induct:∀%{(Nat=>>Prop)`p=>>Prop:
+          (p(zero) And% ∀%{Nat`n=>>Prop: p(n) Implies% p(succ n)})
+          Implies% ∀%{Nat`n=>>Prop: p(n)} };
+>;
+`Rspec = <:
+    `ns1:NatSpec;`N1=ns1.Nat;
+    `ns2:NatSpec;`N2=ns2.Nat;
+    `Qrel = N1*N2=>>Prop; # any relation on N1,N2
+    `Qok = Qrel//{(N1*N2=>>Prop)`Q=>>Prop:
+                   Q(ns1.zero,ns2.zero) And% 
+        ∀%{Q(N1`a*N2`b)=>>Prop: Q(a,b) Implies%% Q(ns1.succ(a),ns2.succ(b))}
+      };
+    `R = {N1`x*N2`y=>>Prop:∀%{Qok`qok=>>Prop:qok(x,y)}};
+    `f:N1=>>N2;
+    # `` indicates free variable. These can be reused.
+    f ``x = (@ ∃!% {`y:N2=>>Prop: R(x,y)}).pickIt; # a constraint on f
+    `Pex ``x = ∃% {`y:N2=>>Prop: R(x,y)} # a Prop type
+    R(Ns1.zero,ns2.zero) = ∀%{Qok`qok=>>Prop:qok(ns1.zero,ns2.zero)};
+    Qok.restriction (ns1.zero,ns2.zero) implies% 
+    ns1.induct.at(Pex ns1.zero) = 
+
+
+
+
+    `PairOK{N1`x*N2`y=>>Prop:
+              (x=%ns1.zero And% y=%ns2.zero) Or%
+
+            }
+     =>> (x=%ns1.zero And% y=%ns2.zero)
+    `R = {N1`x*N2`y=>>Prop: (x=%ns1.zero And% y=%ns2.zero) or
+    ∀%{(N1*N2=>>Prop)`Q =>> 
+                                Q(ns1.zero,ns2.zero) And% 
+        ∀%{ns1.Nat`a*n2.Nat`b=>>Prop: Q(a,b) Iff% Q(ns1.succ(a),ns2.succ(b))}}
+Q
+
+
+`ns1EQns2 = {NatSpec`Ns1<<=>>Natspec`Ns2:
+    `val2val = {Ns1.Nat`n1<<=>>Ns2.Nat`n2:
+        n2 = n1|( {:$=Ns1.zero;Ns2.zero} + {:$=Ns1.succ(`n1p);Ns2.succ(val2val(n1p))});
+        n1 = n2|( {:$=Ns2.zero;Ns1.zero} + {:$=Ns2.succ(`n2p);Ns1.succ(val2val.rev(n2p))});
+        }
+    }
+}
+`NatUnique = {NatSpec`ns1*NatSpec`ns2=>>Isomorphism(ns1,ns2):
+    
+    Isomorphism%(ns1,ns2) = ∃!
+}
+
+
+
+
+
+
+
+
+
+
+
+
+How to use the hierarchy for interfaces
+
+Some types are Distinguishable
+
+`Distinguishable = < : `T:Type; `equal:T*T=>>Bool; > ;
+Nat isequal (`_DN = < Nat : `isDistinguishable = @< Distinguishable : T=Nat; equal=eqNat; > >) by 
+  {Nat`n <<=>> _DN`dn: dn = @<_DN:n:Nat.__self__>}
+
+Suppose we have a type for Combinable
+
+`Combinable = < : T: Type; `combine: List(T)=>>T; >
+
+We want anything Distinguishable to map combine to equality
+
+foreach T:Type; DT:
